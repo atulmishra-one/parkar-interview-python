@@ -4,7 +4,8 @@
 """
 
 import re
-import sys
+from collections import Counter
+from collections import defaultdict
 
 words = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', \
          'w', 'x', 'y', 'z']
@@ -22,25 +23,6 @@ def validate_minimum_required(value):
     if len(value) < 1:
         raise ValueError('Please enter minimum one character for player.')
     return value
-
-
-def get_players_strings(string_name, player):
-    strings = []
-    for z in player:
-        if z == string_name:
-            strings.append(z)
-    return strings
-
-
-def get_valid_strings_of_player(player):
-    result = []
-    for i in words:
-        chars = get_players_strings(i, player)
-        if chars:
-            result.append(chars)
-        else:
-            continue
-    return chars
 
 
 def declare_draw_if_no(player_one, player_two):
@@ -78,25 +60,29 @@ def declare_draw_if_number_or_symbol(player_one, player_two):
 
 
 def get_winner(player_one, player_two):
-    winner = None
-    for i in words:
-        ch1 = get_players_strings(i, player_one)
-        if not ch1 or len(ch1) == 1:
-            continue
+    player_a = Counter(player_one).most_common()
+    player_b = Counter(player_two).most_common()
 
-    for i in words:
-        ch2 = get_players_strings(i, player_two)
-        if not ch2 or len(ch2) == 1:
-            continue
+    a = defaultdict(list)
+    for i in player_a:
+        a[i[0]] = i[1]
 
-    if not declare_draw_if_number_or_symbol(player_one, player_two):
-        winner = None
-    elif not declare_draw_if_no(player_one, player_two):
-        winner = None
-    elif not len(ch1) and not len(ch2):
-        winner = None
-    elif len(ch1) == len(ch2):
-        winner = player_one
-    elif not winner:
-        winner = player_two
-    return winner
+    b = defaultdict(list)
+    for i in player_b:
+        b[i[0]] = i[1]
+
+    max_value_a = max(a.values())
+    max_value_b = max(b.values())
+
+    for i, v in enumerate(words):
+        if words[0] in a.keys() and a[v] == max_value_a:
+            return player_one
+        elif words[0] in a.keys() and words[0] in b.keys() and b[v] == max_value_b and a[v] == max_value_a:
+            if words[1] in a.keys() and a[v] == max_value_a:
+                return player_one
+            else:
+                return None
+        elif words[0] in a.keys() and words[1] == max_value_a:
+            return player_one
+        else:
+            return None
